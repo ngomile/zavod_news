@@ -1,0 +1,27 @@
+{
+  "name": "news_app",
+  "version": "0.0.0",
+  "description": "Demo news application",
+  "homepage": "https://github.com/ngomile/zavod_news#readme",
+  "bugs": {
+    "url": "https://github.com/ngomile/zavod_news/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngomile/zavod_news.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.3",
+    "vite": "^7.3.1"
+  }
+}
