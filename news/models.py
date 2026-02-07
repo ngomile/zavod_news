@@ -6,6 +6,7 @@ class ArticleQuerySet(models.QuerySet):
     pass
 
 class ArticlesManager(models.Manager):
+    '''Manager for Article model. Includes custom queryset methods for articles.'''
     model = type['Article']
 
     def get_queryset(self, *args, **kwargs):
@@ -19,6 +20,10 @@ class ArticlesManager(models.Manager):
         )
 
 class Article(models.Model):
+    '''
+    Model representing a news article. Includes fields
+    for title, lead image, content, view count, and timestamps.
+    '''
     objects = ArticlesManager()
 
     title = models.CharField(max_length=255)
@@ -29,10 +34,15 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def add_view(self):
+        '''Increment the view count of the article.'''
         self.views += 1
         self.save(update_fields=['views'])
 
     def get_reactions(self, type = None):
+        '''
+        Get reactions for the article. If a type is provided,
+        filter reactions by that type.
+        '''
         if type:
             reactions = Reaction.objects.filter(
                 article=self,
@@ -46,6 +56,7 @@ class Article(models.Model):
         return reactions
 
     def get_user_reaction(self, user):
+        '''Get the reaction of a specific user for the article.'''
         try:
             article_reaction = Reaction.objects.get(
                 article=self,
@@ -57,15 +68,21 @@ class Article(models.Model):
             return None
 
     def get_reaction_count(self, type = None):
+        '''
+        Get the count of reactions for the article.
+        If a type is provided, filter reactions by that type.
+        '''
         reactions = self.get_reactions(type)
         return reactions.count()
 
     def set_user_reaction(self, reaction, user):
-        article_reaction, _ = Reaction.objects.get_or_create(  # noqa: E501
+        article_reaction, _ = Reaction.objects.get_or_create(
             article=self,
             user=user
         )
 
+        # User clicked on reaction they already gave, remove it.
+        # Otherwise, update to the new reaction.
         if article_reaction.reaction == reaction:
             article_reaction.delete()
         else:
@@ -73,10 +90,12 @@ class Article(models.Model):
             article_reaction.save()
 
     def set_tags(self, tag_ids):
+        '''Set the tags for the article.'''
         tags = Tag.objects.filter(id__in=tag_ids)
         self.tags.set(tags) # type: ignore
 
     def set_images(self, image_files):
+        '''Set the images for the article.'''
         for image in image_files:
             ArticleImage.objects.create(
                 article=self,
@@ -90,6 +109,7 @@ class Article(models.Model):
         ordering = ['-created_at']
 
 class ArticleImage(models.Model):
+    '''Model representing an image associated with an article.'''
     article = models.ForeignKey(
         Article,
         on_delete=models.CASCADE,
@@ -107,7 +127,8 @@ class ArticleImage(models.Model):
 class ArticleTagQuerySet(models.QuerySet):
     pass
 
-class ArticleTagManager(models.Manager):
+class TagManager(models.Manager):
+    '''Manager for Tag model. Includes custom queryset methods for tags.'''
     model = type['Tag']
 
     def get_queryset(self, *args, **kwargs):
@@ -119,7 +140,8 @@ class ArticleTagManager(models.Manager):
         )
 
 class Tag(models.Model):
-    objects = ArticleTagManager()
+    '''Model representing a tag that can be associated with articles.'''
+    objects = TagManager()
 
     article = models.ManyToManyField(
         Article,
@@ -139,6 +161,7 @@ class Tag(models.Model):
         return self.label
 
 class Reaction(models.Model):
+    '''Model representing a reaction (like or dislike) that a user can give to an article.'''
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reactions')
     reaction = models.CharField(
         max_length=255,
@@ -171,6 +194,7 @@ class Reaction(models.Model):
         ]
 
 class Comment(models.Model):
+    '''Model representing a comment that a user can leave on an article.'''
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
