@@ -8,7 +8,7 @@ from .models import (
     Comment
 )
 
-class ArticleTagSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     '''
     Serializer for the Tag model.'''
     views = serializers.SerializerMethodField()
@@ -69,7 +69,7 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
 
 class ArticleSerializer(serializers.ModelSerializer):
-    tags = ArticleTagSerializer(
+    tags = TagSerializer(
         many=True,
         read_only=True
     )
