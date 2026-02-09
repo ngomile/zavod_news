@@ -46,7 +46,7 @@ class Article(models.Model):
         if type:
             reactions = Reaction.objects.filter(
                 article=self,
-                reaction=type
+                type=type
             )
         else:
             reactions = Reaction.objects.filter(
@@ -63,7 +63,7 @@ class Article(models.Model):
                 user=user
             )
 
-            return article_reaction.reaction
+            return article_reaction.type
         except Reaction.DoesNotExist:
             return None
 
@@ -75,7 +75,7 @@ class Article(models.Model):
         reactions = self.get_reactions(type)
         return reactions.count()
 
-    def set_user_reaction(self, reaction, user):
+    def set_user_reaction(self, type, user):
         article_reaction, _ = Reaction.objects.get_or_create(
             article=self,
             user=user
@@ -83,10 +83,10 @@ class Article(models.Model):
 
         # User clicked on reaction they already gave, remove it.
         # Otherwise, update to the new reaction.
-        if article_reaction.reaction == reaction:
+        if article_reaction.type == type:
             article_reaction.delete()
         else:
-            article_reaction.reaction = reaction
+            article_reaction.type = type
             article_reaction.save()
 
     def set_tags(self, tag_ids):
@@ -147,6 +147,9 @@ class Tag(models.Model):
         Article,
         related_name='tags'
     )
+    image: models.ImageField = models.ImageField(
+        upload_to='tags',
+    )
     label = models.CharField(
         max_length=120
     )
@@ -163,7 +166,7 @@ class Tag(models.Model):
 class Reaction(models.Model):
     '''Model representing a reaction (like or dislike) that a user can give to an article.'''
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reactions')
-    reaction = models.CharField(
+    type = models.CharField(
         max_length=255,
         choices=(
             ('like', 'Like'),
@@ -183,7 +186,7 @@ class Reaction(models.Model):
     )
 
     def __str__(self):
-        return f'{self.user.username} - {self.reaction} - {self.article.title}'
+        return f'{self.user.username} - {self.type} - {self.article.title}'
 
     class Meta:
         constraints = [
@@ -200,6 +203,9 @@ class Comment(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.user.username} - {self.article.title} - {self.content[:20]}'

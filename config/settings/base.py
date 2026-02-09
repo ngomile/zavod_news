@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = 'django-insecure-nhq==4r!my$!c@umdpn6%oonk!$5%b^b%st&b!f(kvkd982!c0'
 
@@ -13,6 +13,7 @@ ALLOWED_HOSTS = ['*'] # type: ignore
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'corsheaders',
 
     'django.contrib.admin',
@@ -22,13 +23,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'channels',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'django_filters',
 
-    'auth',
+    'api_auth',
     'news',
-    'news_app'
+    'news_app',
 ]
 
 MIDDLEWARE = [
@@ -59,6 +62,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'config.asgi.application'
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
@@ -130,6 +134,13 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}

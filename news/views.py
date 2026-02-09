@@ -41,26 +41,17 @@ class ArticleViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        '''Override the create method to handle tags and images.'''
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
             article = serializer.save()
+            article.set_tags(request.data.get('tag_ids', []))
+            article.set_images(request.FILES.getlist('images'))
 
-            tag_ids = request.data.get('tag_ids', [])
-            article.set_tags(tag_ids)
-
-            image_files = request.FILES.getlist('images')
-            article.set_images(image_files)
-
-        headers = self.get_success_headers(serializer.data)
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
+        # RE-SERIALIZE to include the tags and images in the response
+        final_serializer = self.get_serializer(article)
+        return Response(final_serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         queryset = super().get_queryset()
